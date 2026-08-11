@@ -33,8 +33,14 @@ with open(ROOT_DIR / "app" / "styles.css", encoding="utf-8") as f:
 
 st.title("Marathi Folk Songs Summarization & Emotion Analysis")
 
-st.write(
-    "Generate summaries and analyze emotions from Marathi folk songs."
+st.markdown(
+    "<div class='app-subtitle'>Generate summaries and analyze emotions from Marathi folk songs.</div>",
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    "<div class='report-header'><span class='report-kicker'>Folk Song Analysis Report</span></div>",
+    unsafe_allow_html=True
 )
 
 
