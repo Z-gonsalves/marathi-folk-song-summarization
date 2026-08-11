@@ -1,0 +1,85 @@
+/* Hide Streamlit menu and footer */
+
+#MainMenu {
+    visibility: hidden;
+}
+
+footer {
+    visibility: hidden;
+}
+
+header {
+    visibility: hidden;
+}
+
+/* Main page */
+
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* Title */
+
+h1 {
+    color: #1f2937;
+    font-size: 38px;
+    font-weight: 700;
+}
+
+/* Section headings */
+
+h3 {
+    color: #374151;
+}
+
+/* Cards */
+
+div[data-testid="metric-container"] {
+    border: 1px solid #dcdcdc;
+    border-radius: 12px;
+    padding: 15px;
+    background-color: white;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Buttons */
+
+.stButton > button {
+    background-color: #1f4e79;
+    color: white;
+    border-radius: 8px;
+    height: 45px;
+    width: 100%;
+    font-size: 16px;
+}
+
+.stButton > button:hover {
+    background-color: #17395a;
+}
+
+/* Text area */
+
+textarea {
+    border-radius: 10px !important;
+}
+
+.emotion-card {
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #dddddd;
+    background: white;
+    text-align: center;
+    min-height: 120px;
+}
+
+.emotion-card h4 {
+    color: #6b7280;
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.emotion-card h2 {
+    color: #1f2937;
+    font-size: 28px;
+}
