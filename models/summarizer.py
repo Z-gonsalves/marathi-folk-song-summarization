@@ -1,31 +1,38 @@
-import pandas as pd
+
 from transformers import pipeline
 
-print("Loading summarization model...")
+MODEL_NAME = "csebuetnlp/mT5_multilingual_XLSum"
 
-# Load multilingual summarization model
-summarizer = pipeline(
-    "summarization",
-    model="csebuetnlp/mT5_multilingual_XLSum"
-)
+summarizer = None
 
-# Load dataset
-df = pd.read_csv("outputs/final_preprocessed_dataset.csv", encoding="utf-8")
 
-# Take one song for testing
-lyrics = df.loc[0, "Processed_Lyrics"]
+def load_model():
+    global summarizer
 
-print("\nOriginal Lyrics:\n")
-print(lyrics[:1000])   # Show first 1000 characters
+    if summarizer is None:
+        print("Loading summarization model...")
+        summarizer = pipeline(
+            "summarization",
+            model=MODEL_NAME
+        )
 
-print("\nGenerating summary...\n")
+    return summarizer
 
-summary = summarizer(
-    lyrics,
-    max_length=80,
-    min_length=25,
-    do_sample=False
-)
 
-print("Summary:\n")
-print(summary[0]["summary_text"])
+def summarize_text(lyrics):
+    if not isinstance(lyrics, str) or not lyrics.strip():
+        return ""
+
+    model = load_model()
+
+    result = model(
+        lyrics.strip(),
+        max_length=84,
+        min_length=15,
+        num_beams=4,
+        no_repeat_ngram_size=2,
+        do_sample=False,
+        truncation=True
+    )
+
+    return result[0]["summary_text"].strip()

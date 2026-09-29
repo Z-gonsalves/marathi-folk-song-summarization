@@ -1,3 +1,4 @@
+
 import sys
 from pathlib import Path
 
@@ -54,7 +55,25 @@ def load_data():
     )
 
 
+@st.cache_data
+def load_evaluation_scores():
+    path = ROOT_DIR / "evaluation" / "rouge_scores.csv"
+    if path.exists():
+        return pd.read_csv(path)
+    return pd.DataFrame()
+
+
+@st.cache_data
+def load_evaluation_results():
+    path = ROOT_DIR / "evaluation" / "evaluation_results.csv"
+    if path.exists():
+        return pd.read_csv(path)
+    return pd.DataFrame()
+
+
 df = load_data()
+evaluation_scores = load_evaluation_scores()
+evaluation_results = load_evaluation_results()
 
 
 # ---------------- DASHBOARD ----------------
@@ -90,7 +109,6 @@ genre = st.sidebar.selectbox(
     ["All"] + sorted(df["Genre"].dropna().unique().tolist())
 )
 
-
 if genre != "All":
     filtered_df = df[df["Genre"] == genre]
 else:
@@ -101,7 +119,6 @@ region = st.sidebar.selectbox(
     "Region",
     ["All"] + sorted(filtered_df["Region"].dropna().unique().tolist())
 )
-
 
 if region != "All":
     filtered_df = filtered_df[
@@ -115,7 +132,6 @@ song = st.selectbox(
     "Select Song",
     filtered_df["Title"].tolist()
 )
-
 
 row = filtered_df[
     filtered_df["Title"] == song
@@ -137,12 +153,13 @@ summarizer = load_model()
 
 # ---------------- TABS ----------------
 
-tab1, tab2, tab3, tab4 = st.tabs(
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
     [
         "Song Information",
         "Lyrics",
         "Summary",
-        "Emotion Analysis"
+        "Emotion Analysis",
+        "Evaluation"
     ]
 )
 
@@ -275,4 +292,163 @@ with tab4:
             </div>
             """,
             unsafe_allow_html=True
+        )
+
+
+# =========================================================
+# EVALUATION TAB
+# =========================================================
+
+with tab5:
+
+    st.subheader("Summarization Evaluation")
+
+    st.markdown(
+        "Comparison of the Extractive and mT5 summarization methods "
+        "using ROUGE evaluation."
+    )
+
+    if not evaluation_scores.empty:
+
+        # Prepare average ROUGE score table
+        score_table = evaluation_scores.pivot(
+            index="Metric",
+            columns="Method",
+            values="Average F1 Score"
+        )
+
+        score_table = score_table.reindex(
+            ["ROUGE-1", "ROUGE-2", "ROUGE-L"]
+        )
+
+        st.subheader("Average ROUGE Scores")
+
+        metric_col1, metric_col2, metric_col3 = st.columns(3)
+
+        for metric, column in zip(
+            ["ROUGE-1", "ROUGE-2", "ROUGE-L"],
+            [metric_col1, metric_col2, metric_col3]
+        ):
+            with column:
+                if metric in score_table.index:
+                    extractive_score = score_table.loc[
+                        metric, "Extractive"
+                    ] if "Extractive" in score_table.columns else None
+
+                    mt5_score = score_table.loc[
+                        metric, "mT5"
+                    ] if "mT5" in score_table.columns else None
+
+                    st.metric(
+                        metric,
+                        f"{extractive_score:.4f}"
+                        if pd.notna(extractive_score) else "N/A",
+                        delta=(
+                            f"{mt5_score - extractive_score:+.4f} mT5 vs Extractive"
+                            if pd.notna(extractive_score)
+                            and pd.notna(mt5_score)
+                            else None
+                        ),
+                        delta_color="off"
+                    )
+
+        st.subheader("Method Comparison")
+
+        chart_data = score_table.copy()
+
+        st.bar_chart(
+            chart_data,
+            y_label="Average F1 Score",
+            x_label="ROUGE Metric"
+        )
+
+        st.caption(
+            "Higher ROUGE scores indicate greater word or sequence "
+            "overlap with the reference summaries. They do not, by "
+            "themselves, establish semantic accuracy or fluency."
+        )
+
+        st.subheader("Detailed Score Table")
+
+        display_scores = evaluation_scores.copy()
+        display_scores["Average F1 Score"] = (
+            display_scores["Average F1 Score"].round(4)
+        )
+
+        st.dataframe(
+            display_scores,
+            use_container_width=True,
+            hide_index=True
+        )
+
+    else:
+
+        st.warning(
+            "Evaluation scores were not found. Run "
+            "'python -P evaluation/run_evaluation.py' "
+            "from the project root to generate them."
+        )
+
+    st.divider()
+
+    st.subheader("Song-wise Evaluation Results")
+
+    if not evaluation_results.empty:
+
+        if "Title" in evaluation_results.columns:
+
+            available_titles = evaluation_results["Title"].dropna().tolist()
+
+            if song in available_titles:
+                selected_result = evaluation_results[
+                    evaluation_results["Title"] == song
+                ]
+
+                st.markdown(f"**Selected song: {song}**")
+
+                summary_columns = [
+                    col for col in [
+                        "Title",
+                        "Reference_Summary",
+                        "Extractive_Summary",
+                        "Extractive_ROUGE-1",
+                        "Extractive_ROUGE-2",
+                        "Extractive_ROUGE-L",
+                        "mT5_Summary",
+                        "mT5_ROUGE-1",
+                        "mT5_ROUGE-2",
+                        "mT5_ROUGE-L"
+                    ]
+                    if col in selected_result.columns
+                ]
+
+                st.dataframe(
+                    selected_result[summary_columns],
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+            else:
+                st.info(
+                    "This song is not part of the 20-song evaluation set. "
+                    "The average ROUGE scores above are still available."
+                )
+
+            with st.expander("View all evaluated songs"):
+                st.dataframe(
+                    evaluation_results,
+                    use_container_width=True,
+                    hide_index=True
+                )
+
+        else:
+            st.warning(
+                "The evaluation results file does not contain a Title column."
+            )
+
+    else:
+
+        st.info(
+            "Song-wise results are not available. Run the evaluation "
+            "script to generate evaluation_results.csv."
         )
