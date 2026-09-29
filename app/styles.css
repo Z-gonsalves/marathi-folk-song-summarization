@@ -1,514 +1,479 @@
+/* ==========================================================================
+   Academic Project Stylesheet
+   Marathi Folk Song Summarization and Emotion Analysis
+   Department of Computer Engineering - Final Year Project
+   ========================================================================== */
+
+/* Webfont Imports */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+
+/* Fallback local font definition */
 @font-face {
     font-family: "Noto Sans Devanagari";
     src: url("../fonts/NotoSansDevanagari-VariableFont_wdth,wght.ttf") format("truetype");
     font-weight: 300 800;
     font-style: normal;
+    font-display: swap;
 }
 
-/* Hide Streamlit menu and footer */
+/* --------------------------------------------------------------------------
+   GLOBAL SETTINGS & RESET
+   -------------------------------------------------------------------------- */
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+header { visibility: hidden; }
 
-#MainMenu {
-    visibility: hidden;
-}
-
-footer {
-    visibility: hidden;
-}
-
-header {
-    visibility: hidden;
-}
-
-/* Global typography */
-
+/* Base font size increased for optimal readability */
 html {
-    font-size: 19px;
+    font-size: 16px;
 }
 
-.stApp {
-    font-family: "Noto Sans Devanagari", "Nirmala UI", "Segoe UI", Arial, sans-serif;
-    background-color: #C6DCE2;
-    color: #102A34;
+body, .stApp {
+    background-color: #ffffff;
+    color: #202124;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 1.05rem;
-}
-
-.block-container {
-    max-width: 1280px;
-    padding-top: 2rem;
-    padding-bottom: 2rem;
-}
-
-.app-subtitle {
-    margin-top: 0.25rem;
-    margin-bottom: 1.35rem;
-    color: #23434D;
-    font-size: 1.12rem;
-    line-height: 1.55;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
 }
 
 [data-testid="stAppViewContainer"] {
-    background-color: #C6DCE2;
+    background-color: #ffffff;
 }
 
-[data-testid="stVerticalBlock"] {
-    background-color: transparent;
+.block-container {
+    max-width: 1180px;
+    padding-top: 2.25rem;
+    padding-bottom: 4rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
 
-/* Title */
+/* --------------------------------------------------------------------------
+   TYPOGRAPHY HIERARCHY
+   -------------------------------------------------------------------------- */
+h1, h2, h3, h4 {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #202124;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+}
 
 h1 {
-    color: #000000;
-    font-size: clamp(2.22rem, 3vw, 2.98rem);
-    line-height: 1.06;
-    font-weight: 700;
-    letter-spacing: -0.05em;
-    margin-bottom: 0.55rem;
+    font-size: 2.1rem;
+    line-height: 1.28;
+    margin-bottom: 0.45rem;
 }
-
-.report-header {
-    margin-top: 0.10rem;
-    margin-bottom: 1.20rem;
-    padding: 0.60rem 0rem;
-    border-top: 1px solid #819AA4;
-    border-bottom: 1px solid #819AA4;
-    background-color: transparent;
-}
-
-.report-kicker {
-    display: inline-block;
-    font-size: 0.84rem;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #20434E;
-}
-
-.stApp p {
-    font-size: 1.03rem;
-    line-height: 1.78;
-}
-
-.stApp .stCaption {
-    color: #576977;
-    font-size: 1.04rem;
-}
-
-/* Section headings */
 
 h2 {
-    color: #34434d;
-    font-size: 1.62rem;
-    line-height: 1.2;
-    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1.35;
+    margin-top: 1.35rem;
+    margin-bottom: 0.65rem;
 }
 
 h3 {
-    color: #455560;
-    font-size: 1.18rem;
-    line-height: 1.3;
-    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1.4;
+    color: #3c4043;
+    margin-top: 1rem;
+    margin-bottom: 0.45rem;
 }
 
 h4 {
-    color: #52616c;
-    font-size: 0.98rem;
-    line-height: 1.2;
+    font-size: 1.08rem;
+    line-height: 1.45;
+    color: #3c4043;
 }
 
-/* Sidebar */
-
-[data-testid="stSidebar"] {
-    background-color: #eef2f3;
-    border-right: 1px solid #ccd6dd;
-}
-
-[data-testid="stSidebar"] .css-17lntkn {
-    padding-top: 2rem;
-}
-
-[data-testid="stSidebar"] h1,
-[data-testid="stSidebar"] h2,
-[data-testid="stSidebar"] h3 {
-    color: #20323b;
-}
-
-[data-testid="stSidebar"] [data-testid="stSidebarNavLink"] {
-    color: #485b68;
-}
-
-[data-testid="stSidebar"] section[data-testid="stSidebar"] {
-    width: 300px;
-}
-
-/* Sidebar text and controls */
-
-[data-testid="stSidebar"] .stSelectbox label {
-    color: #465760;
-    font-weight: 700;
-    font-size: 0.98rem;
-}
-
-[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] {
-    font-size: 1rem;
-}
-
-[data-testid="stSidebar"] .stSelectbox > div[data-baseweb="select"] > div {
-    background-color: #ffffff;
-    color: #33434a;
-    border: 1px solid #aebac2;
-}
-
-[data-testid="stSidebar"] .stSelectbox > div[data-baseweb="select"] > div > div {
-    color: #354b54;
-    background-color: #ffffff;
-}
-
-[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] span {
-    color: #33434a;
-}
-
-[data-testid="stSidebar"] [role="listbox"] {
-    background-color: #ffffff;
-    color: #33434a;
-    border: 1px solid #aebac2;
-}
-
-[data-testid="stSidebar"] [role="option"] {
-    color: #33434a;
-    background-color: #ffffff;
-}
-
-[data-testid="stSidebar"] [role="option"]:hover {
-    background-color: #edf3f4;
-}
-
-[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] > div input {
-    color: #354b54;
-}
-
-[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] [aria-haspopup="listbox"] {
-    color: #354b54;
-}
-
-[data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] svg {
-    color: #526e75;
-}
-
-/* Dashboard metric row */
-
-div[data-testid="metric-container"] {
-    border: 1px solid #819AA4;
-    border-radius: 12px;
-    padding: 15px;
-    background-color: #EEF8F9;
-    box-shadow: 0 1px 2px rgba(40, 55, 65, 0.06);
-}
-
-div[data-testid="metric-container"] [data-testid="stMetricValue"] {
-    color: #102A34;
-    font-size: 2.14rem;
-    line-height: 1.05;
-}
-
-div[data-testid="metric-container"] [data-testid="stMetricLabel"] {
-    color: #20434E;
+p, .stMarkdown p {
     font-size: 1.05rem;
-    font-weight: 800;
-    letter-spacing: 0.01em;
+    line-height: 1.75;
+    color: #3c4043;
 }
 
-div[data-testid="metric-container"] [data-testid="stMetricDelta"] {
-    font-size: 0.9rem;
+/* Streamlit Caption Enhancement for Better Readability */
+.stApp .stCaption, [data-testid="stCaptionContainer"] {
+    font-size: 0.94rem !important;
+    color: #5f6368 !important;
+    line-height: 1.6 !important;
 }
 
-div[data-testid="metric-container"] p {
-    color: #20434E;
-    font-size: 1rem;
+/* Devanagari Text Containers - Generous Line-Height & Clear Scaling */
+.history-text, .summary-text, .qual-content, textarea {
+    font-family: "Noto Sans Devanagari", "Nirmala UI", sans-serif !important;
+    line-height: 1.95 !important;
+    font-size: 1.15rem !important;
+    color: #202124 !important;
 }
 
-div[data-testid="metric-container"] span {
-    color: #20434E;
+/* --------------------------------------------------------------------------
+   METRICS ROW
+   -------------------------------------------------------------------------- */
+div[data-testid="stMetric"] {
+    background-color: #f8f9fa;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    padding: 1.1rem 1.25rem;
+    box-shadow: none;
 }
 
-div[data-testid="metric-container"] div {
-    color: #20434E;
-}
-
-div[data-testid="metric-container"] .stMetricText {
-    color: #20434E;
-}
-
-div[data-testid="metric-container"] [data-testid="stMetricValue"] span {
-    color: #102A34;
-    font-size: 2.14rem;
-}
-
-div[data-testid="metric-container"] [data-testid="metric-label"] {
-    font-size: 1.05rem;
-    color: #20434E;
-}
-
-[data-testid="stMetricLabel"] {
-    font-size: 1.05rem !important;
-    font-weight: 800 !important;
-    color: #20434E !important;
-}
-
-[data-testid="stMetricValue"] {
-    font-size: 2.08rem !important;
-    color: #102A34 !important;
-}
-
-[data-testid="stMetricDelta"] {
+div[data-testid="stMetric"] [data-testid="stMetricLabel"] {
+    font-family: "Inter", sans-serif !important;
     font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    color: #5f6368 !important;
+    margin-bottom: 0.35rem;
 }
 
-/* Tabs */
-
-div[role="tablist"] {
-    display: flex;
-    align-items: stretch;
-    gap: 0.45rem;
-    border: 1px solid #819AA4;
-    border-radius: 12px;
-    padding: 0.38rem;
-    background-color: #EEF8F9;
-    margin-bottom: 1rem;
+div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace !important;
+    font-size: 2.15rem !important;
+    font-weight: 700 !important;
+    color: #202124 !important;
+    line-height: 1.15 !important;
 }
 
-div[role="tablist"] button {
-    font-family: "Noto Sans Devanagari", "Nirmala UI", "Segoe UI", Arial, sans-serif;
-    font-size: 0.94rem;
+/* --------------------------------------------------------------------------
+   SIDEBAR
+   -------------------------------------------------------------------------- */
+[data-testid="stSidebar"] {
+    background-color: #f8f9fa;
+    border-right: 1px solid #dadce0;
+}
+
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+    gap: 0.85rem;
+    padding-top: 1.25rem;
+}
+
+.sidebar-heading {
+    font-size: 0.95rem;
     font-weight: 700;
-    color: #526872;
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 9px;
-    padding: 0.75rem 1rem;
-    min-height: 48px;
-    flex: 1 1 0;
-    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #5f6368;
+    margin-bottom: 0.4rem;
 }
 
-div[role="tablist"] button[aria-selected="true"] {
-    background-color: #6C8795;
-    border-color: #3B6674;
-    color: white;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.75);
-}
-
-div[role="tablist"] button:hover {
-    border-color: #3B6674;
-    background-color: #D9EEF2;
-}
-
-div[role="tablist"] button:focus {
-    outline: none;
-    border-color: #3B6674;
-}
-
-.stTabs {
-    margin-top: 0.25rem;
-}
-
-.stTabs [data-testid="stVerticalBlock"] {
-    border-radius: 12px;
-}
-
-/* Form controls */
-
-.stSelectbox label,
-.stTextInput label {
-    color: #475b66;
-    font-weight: 700;
-    font-size: 1rem;
-}
-
-.stSelectbox [data-baseweb="select"] > div,
-.stSelectbox > div > div {
-    min-height: 3rem;
-}
-
-.stSelectbox [data-baseweb="select"] span {
-    font-size: 1rem;
-    color: #354b54;
+.stSelectbox label {
+    font-family: "Inter", sans-serif;
+    color: #3c4043 !important;
+    font-size: 0.96rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 0.3rem;
 }
 
 .stSelectbox [data-baseweb="select"] > div {
-    background-color: #ffffff;
-    color: #354b54;
-    border: 1px solid #acbdc7;
+    background-color: #ffffff !important;
+    border: 1px solid #dadce0 !important;
+    border-radius: 6px !important;
+    min-height: 2.65rem;
 }
 
-.stSelectbox [role="combobox"] {
-    color: #354b54;
+.stSelectbox [data-baseweb="select"] span {
+    font-family: "Noto Sans Devanagari", "Inter", sans-serif !important;
+    font-size: 1.02rem !important;
+    color: #202124 !important;
+    font-weight: 500 !important;
 }
 
-.stSelectbox [role="listbox"] {
-    color: #354b54;
-    background-color: #ffffff;
+/* --------------------------------------------------------------------------
+   SONG META BOX
+   -------------------------------------------------------------------------- */
+.song-meta-box {
+    background-color: #f8f9fa;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    padding: 1.1rem 1.4rem;
+    margin-top: 0.75rem;
+    margin-bottom: 1.5rem;
 }
 
-.stSelectbox [role="option"] {
-    color: #354b54;
-    background-color: #ffffff;
-}
-
-.stSelectbox [role="option"]:hover {
-    background-color: #edf3f4;
-}
-
-.stSelectbox select,
-.stTextInput input,
-.stTextArea textarea {
-    font-family: "Noto Sans Devanagari", "Nirmala UI", "Segoe UI", Arial, sans-serif;
-}
-
-.stSelectbox > div > div {
-    border-radius: 10px;
-    border-color: #bdcbd2;
-}
-
-.stSelectbox > div > div:focus-within,
-.stTextArea textarea:focus {
-    border-color: #6e8796;
-    box-shadow: 0 0 0 0.15rem rgba(78, 108, 119, 0.15);
-}
-
-/* Main content spacing */
-
-section[data-testid="stVerticalBlock"] > div {
-    margin-bottom: 0.8rem;
-}
-
-/* Buttons */
-
-.stButton > button {
-    background-color: #37596c;
-    color: white;
-    border-radius: 8px;
-    height: 45px;
-    width: 100%;
-    font-size: 0.98rem;
+.song-meta-title {
+    font-family: "Noto Sans Devanagari", sans-serif;
+    font-size: 1.55rem;
     font-weight: 700;
-    border: 1px solid #2d4d59;
+    color: #202124;
+    margin-bottom: 0.45rem;
+    line-height: 1.4;
+}
+
+.song-meta-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.85rem;
+    font-size: 0.98rem;
+    color: #5f6368;
+}
+
+.song-meta-details strong {
+    color: #202124;
+}
+
+/* --------------------------------------------------------------------------
+   NAVIGATION TABS
+   -------------------------------------------------------------------------- */
+div[role="tablist"] {
+    display: flex;
+    gap: 1.5rem;
+    border-bottom: 2px solid #dadce0;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 1.5rem;
+}
+
+div[role="tablist"] button[role="tab"] {
+    font-family: "Inter", sans-serif !important;
+    font-size: 1.02rem !important;
+    font-weight: 500 !important;
+    color: #5f6368 !important;
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    margin-bottom: -2px !important;
+    border-radius: 0 !important;
+    padding: 0.75rem 0.35rem !important;
+    min-height: unset !important;
+    transition: color 0.15s ease, border-color 0.15s ease !important;
+}
+
+div[role="tablist"] button[role="tab"]:hover {
+    color: #202124 !important;
+}
+
+div[role="tablist"] button[role="tab"][aria-selected="true"] {
+    background: transparent !important;
+    color: #1a73e8 !important;
+    font-weight: 600 !important;
+    border-bottom: 2px solid #1a73e8 !important;
+    box-shadow: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   TAB 1: SONG INFORMATION
+   -------------------------------------------------------------------------- */
+.info-field-label {
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #5f6368;
+    margin-bottom: 0.3rem;
+}
+
+.info-field-value {
+    font-family: "Noto Sans Devanagari", sans-serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #202124;
+    margin-bottom: 1rem;
+}
+
+.history-text {
+    background-color: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    padding: 1.25rem 1.45rem;
+    font-size: 1.15rem !important;
+    line-height: 2.0 !important;
+    color: #202124;
+    text-align: justify;
+    margin-top: 0.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   TAB 2: LYRICS
+   -------------------------------------------------------------------------- */
+.stTextArea textarea {
+    font-size: 1.15rem !important;
+    line-height: 2.05 !important;
+    color: #202124 !important;
+    background-color: #ffffff !important;
+    border: 1px solid #dadce0 !important;
+    border-radius: 6px !important;
+    padding: 1.1rem 1.25rem !important;
+}
+
+.stTextArea textarea:focus {
+    border-color: #1a73e8 !important;
+    box-shadow: 0 0 0 1px #1a73e8 !important;
+}
+
+/* --------------------------------------------------------------------------
+   TAB 3: SUMMARY
+   -------------------------------------------------------------------------- */
+.stButton > button {
+    background-color: #1a73e8 !important;
+    color: #ffffff !important;
+    font-family: "Inter", sans-serif !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    border: none !important;
+    border-radius: 6px !important;
+    height: 2.75rem !important;
+    padding: 0 1.5rem !important;
+    box-shadow: none !important;
+    transition: background-color 0.15s ease !important;
 }
 
 .stButton > button:hover {
-    background-color: #2d4d59;
+    background-color: #1557b0 !important;
 }
 
-.stButton > button:focus {
-    box-shadow: 0 0 0 0.2rem rgba(88, 126, 132, 0.2);
+.summary-box {
+    background-color: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    padding: 1.35rem 1.5rem;
+    margin-top: 1rem;
 }
 
-/* Text area / lyrics */
+.summary-text {
+    font-size: 1.22rem !important;
+    line-height: 2.05 !important;
+    color: #202124;
+    margin-bottom: 1rem;
+}
 
-.stTextArea textarea {
-    border-radius: 10px !important;
-    border: 1px solid #ccd6dd;
-    background: #fbfdff;
+.summary-meta {
+    font-size: 0.92rem;
+    color: #5f6368;
+    padding-top: 0.85rem;
+    border-top: 1px solid #eee;
+}
+
+/* --------------------------------------------------------------------------
+   TAB 4: EMOTION ANALYSIS
+   -------------------------------------------------------------------------- */
+[data-testid="stProgress"] > div > div > div > div {
+    background-color: #1a73e8 !important;
+}
+
+.taxonomy-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.96rem;
+    margin-top: 0.65rem;
+}
+
+.taxonomy-table th {
+    text-align: left;
+    padding: 0.65rem 0.85rem;
+    background-color: #f8f9fa;
+    color: #3c4043;
+    font-weight: 600;
+    border-bottom: 1px solid #dadce0;
+    font-size: 0.92rem;
+}
+
+.taxonomy-table td {
+    padding: 0.65rem 0.85rem;
+    border-bottom: 1px solid #dadce0;
+    color: #3c4043;
     font-size: 1rem;
-    line-height: 1.85;
-    color: #24323b;
 }
 
-.stTextArea label {
-    color: #455760;
-    font-weight: 700;
+.taxonomy-table td.devanagari {
+    font-family: "Noto Sans Devanagari", sans-serif;
+    font-size: 1.05rem;
+    line-height: 1.8;
 }
 
-.stTextArea textarea {
-    font-family: "Noto Sans Devanagari", "Nirmala UI", "Segoe UI", Arial, sans-serif;
+/* --------------------------------------------------------------------------
+   TAB 5: EVALUATION
+   -------------------------------------------------------------------------- */
+.eval-card {
+    background-color: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    padding: 1rem 1.15rem;
 }
 
-/* Lyrics header readability */
-
-[data-testid="stTextArea"] > div > div {
-    min-height: 430px;
-}
-
-/* Keep original lyrics comfortable to read with Marathi font support */
-.stTextArea textarea {
-    padding: 1rem 1rem;
-}
-
-/* Summary card */
-
-.summary-card {
-    border: 1px solid #819AA4;
-    border-radius: 12px;
-    background-color: #EAF6F8;
-    padding: 1.25rem 1.4rem;
-    color: #153B45;
-    font-size: 1rem;
-    line-height: 1.88;
-    min-height: 150px;
-}
-
-.summary-card p {
-    margin: 0;
-}
-
-/* Info box improvement */
-
-.stAlert {
-    border-radius: 12px;
-    border: 1px solid #819AA4;
-    background-color: #EAF6F8;
-    color: #153B45;
-}
-
-/* Emotion cards */
-
-.emotion-card {
-    padding: 22px 18px;
-    border-radius: 12px;
-    border: 1px solid #3B6674;
-    background: #6C8795;
-    text-align: center;
-    min-height: 140px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.emotion-card h4 {
-    color: #FFFFFF;
-    font-size: 0.88rem;
-    font-weight: 700;
-    margin-bottom: 0.8rem;
+.eval-card-header {
+    font-size: 0.9rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    color: #5f6368;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #eee;
 }
 
-.emotion-card h2 {
-    color: #FFFFFF;
-    font-size: 1.78rem;
-    line-height: 1.2;
-    margin: 0;
-}
-
-/* Final page polish */
-
-.stTabs [data-testid="stExpander"] {
-    border-radius: 12px;
-}
-
-.stMarkdownContainer {
+.eval-card-body {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.45rem;
     font-size: 1rem;
 }
 
-/* Responsive tuning */
+.eval-label {
+    color: #5f6368;
+    font-size: 0.92rem;
+}
 
-@media (max-width: 900px) {
+.eval-card-footer {
+    font-family: ui-monospace, monospace;
+    font-size: 0.88rem;
+    color: #5f6368;
+}
+
+/* Qualitative 3-column layout */
+.qual-box {
+    background-color: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    padding: 1.15rem 1.25rem;
+    height: 100%;
+}
+
+.qual-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #5f6368;
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid #eee;
+}
+
+.qual-content {
+    font-size: 1.12rem !important;
+    line-height: 2.0 !important;
+    color: #202124;
+}
+
+.qual-meta {
+    font-family: ui-monospace, monospace;
+    font-size: 0.88rem;
+    color: #5f6368;
+    margin-top: 0.85rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid #eee;
+}
+
+/* --------------------------------------------------------------------------
+   STREAMLIT TABLE & DIVIDER
+   -------------------------------------------------------------------------- */
+[data-testid="stDataFrame"] {
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    background-color: #ffffff;
+}
+
+hr {
+    margin: 1.5rem 0 !important;
+    border: none !important;
+    border-top: 1px solid #dadce0 !important;
+}
+
+@media (max-width: 768px) {
     .block-container {
         padding-left: 1rem;
         padding-right: 1rem;
-    }
-
-    [data-testid="stSidebar"] section[data-testid="stSidebar"] {
-        width: min(300px, 88vw);
     }
 }

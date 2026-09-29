@@ -1,5 +1,5 @@
-
 import sys
+import base64
 from pathlib import Path
 
 # Add project root folder
@@ -12,37 +12,56 @@ from transformers import pipeline
 from models.emotion_analyzer import detect_emotions
 
 
-# ---------------- PAGE SETTINGS ----------------
+# ---------------- PAGE CONFIGURATION ----------------
 
 st.set_page_config(
-    page_title="Marathi Folk Songs Summarization & Emotion Analysis",
-    page_icon="🎵",
+    page_title="Marathi Folk Song Summarization & Emotion Analysis",
     layout="wide"
 )
 
 
-# ---------------- LOAD CSS ----------------
+# ---------------- LOAD CSS & EMBED LOCAL FONTS ----------------
 
-with open(ROOT_DIR / "app" / "styles.css", encoding="utf-8") as f:
-    st.markdown(
-        f"<style>{f.read()}</style>",
-        unsafe_allow_html=True
-    )
+@st.cache_data
+def get_custom_css():
+    """Load styles.css and embed the local Noto Sans Devanagari font as base64."""
+    css_content = ""
+    css_path = ROOT_DIR / "app" / "styles.css"
+    if css_path.exists():
+        with open(css_path, encoding="utf-8") as f:
+            css_content = f.read()
+
+    font_path = ROOT_DIR / "fonts" / "NotoSansDevanagari-VariableFont_wdth,wght.ttf"
+    if font_path.exists():
+        b64_font = base64.b64encode(font_path.read_bytes()).decode("utf-8")
+        font_face = f"""
+        @font-face {{
+            font-family: 'Noto Sans Devanagari';
+            src: url('data:font/truetype;charset=utf-8;base64,{b64_font}') format('truetype');
+            font-weight: 300 800;
+            font-style: normal;
+            font-display: swap;
+        }}
+        """
+        css_content = font_face + "\n" + css_content
+
+    return css_content
+
+
+st.markdown(
+    f"<style>{get_custom_css()}</style>",
+    unsafe_allow_html=True
+)
 
 
 # ---------------- HEADER ----------------
 
-st.title("Marathi Folk Songs Summarization & Emotion Analysis")
-
-st.markdown(
-    "<div class='app-subtitle'>Generate summaries and analyze emotions from Marathi folk songs.</div>",
-    unsafe_allow_html=True
+st.title("Marathi Folk Song Summarization and Emotion Analysis")
+st.caption(
+    "A natural language processing system for abstractive summarization of Marathi folk songs "
+    "using mT5 and rule-based emotion analysis."
 )
-
-st.markdown(
-    "<div class='report-header'><span class='report-kicker'>Folk Song Analysis Report</span></div>",
-    unsafe_allow_html=True
-)
+st.markdown("---")
 
 
 # ---------------- LOAD DATA ----------------
@@ -76,33 +95,21 @@ evaluation_scores = load_evaluation_scores()
 evaluation_results = load_evaluation_results()
 
 
-# ---------------- DASHBOARD ----------------
+# ---------------- DASHBOARD METRICS ----------------
 
-col1, col2, col3, col4 = st.columns(4)
+m1, m2, m3, m4 = st.columns(4)
 
-col1.metric("Songs", len(df))
+m1.metric("Total Songs", f"{len(df):,}")
+m2.metric("Genres", df["Genre"].nunique())
+m3.metric("Regions", df["Region"].nunique())
+m4.metric("Avg. Lyrics Length", f"{int(df['Lyrics'].str.split().str.len().mean())} words")
 
-col2.metric(
-    "Genres",
-    df["Genre"].nunique()
-)
-
-col3.metric(
-    "Regions",
-    df["Region"].nunique()
-)
-
-col4.metric(
-    "Avg. Lyrics Length",
-    int(df["Lyrics"].str.split().str.len().mean())
-)
-
-st.divider()
+st.markdown("---")
 
 
 # ---------------- SIDEBAR ----------------
 
-st.sidebar.title("Filters")
+st.sidebar.subheader("Filters")
 
 genre = st.sidebar.selectbox(
     "Genre",
@@ -114,7 +121,6 @@ if genre != "All":
 else:
     filtered_df = df.copy()
 
-
 region = st.sidebar.selectbox(
     "Region",
     ["All"] + sorted(filtered_df["Region"].dropna().unique().tolist())
@@ -125,8 +131,19 @@ if region != "All":
         filtered_df["Region"] == region
     ]
 
+st.sidebar.caption(f"Showing {len(filtered_df)} of {len(df)} songs.")
+st.sidebar.divider()
 
-# ---------------- SONG SELECTION ----------------
+st.sidebar.subheader("System Info")
+st.sidebar.text(
+    "Model: mT5-Multilingual-XLSum\n"
+    "Baseline: Extractive Frequency\n"
+    "Target: Marathi (Devanagari)\n"
+    "Corpus: 530+ Folk Songs"
+)
+
+
+# ---------------- SONG SELECTION & OVERVIEW ----------------
 
 song = st.selectbox(
     "Select Song",
@@ -136,6 +153,28 @@ song = st.selectbox(
 row = filtered_df[
     filtered_df["Title"] == song
 ].iloc[0]
+
+is_evaluated = False
+if not evaluation_results.empty and "Title" in evaluation_results.columns:
+    is_evaluated = song in evaluation_results["Title"].dropna().tolist()
+
+song_lyrics = str(row["Lyrics"])
+song_word_count = len(song_lyrics.split())
+
+st.markdown(
+    f"""
+    <div class="song-meta-box">
+        <div class="song-meta-title">{row['Title']}</div>
+        <div class="song-meta-details">
+            <span><strong>Genre:</strong> {row['Genre']}</span>
+            <span><strong>Region:</strong> {row['Region']}</span>
+            <span><strong>Length:</strong> {song_word_count} words</span>
+            <span><strong>Evaluation Set:</strong> {"Yes (20-song benchmark)" if is_evaluated else "No (Corpus only)"}</span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # ---------------- LOAD SUMMARIZATION MODEL ----------------
@@ -149,6 +188,16 @@ def load_model():
 
 
 summarizer = load_model()
+
+
+# ---------------- SESSION STATE MANAGEMENT ----------------
+
+if "current_song" not in st.session_state:
+    st.session_state["current_song"] = song
+elif st.session_state["current_song"] != song:
+    st.session_state["current_song"] = song
+    if "summary" in st.session_state:
+        del st.session_state["summary"]
 
 
 # ---------------- TABS ----------------
@@ -165,7 +214,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs(
 
 
 # =========================================================
-# SONG INFORMATION TAB
+# TAB 1: SONG INFORMATION
 # =========================================================
 
 with tab1:
@@ -173,38 +222,45 @@ with tab1:
     left, right = st.columns(2)
 
     with left:
-        st.subheader("Genre")
-        st.write(row["Genre"])
+        st.markdown("<div class='info-field-label'>Genre</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='info-field-value'>{row['Genre']}</div>", unsafe_allow_html=True)
 
     with right:
-        st.subheader("Region")
-        st.write(row["Region"])
+        st.markdown("<div class='info-field-label'>Region</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='info-field-value'>{row['Region']}</div>", unsafe_allow_html=True)
 
-    st.subheader("History")
-    st.write(row["History"])
-
-
-# =========================================================
-# LYRICS TAB
-# =========================================================
-
-with tab2:
-
-    st.subheader("Original Lyrics")
-
-    st.text_area(
-        "Lyrics",
-        row["Lyrics"],
-        height=400,
-        label_visibility="collapsed"
+    st.markdown("<div class='info-field-label' style='margin-top: 0.5rem;'>Historical and Cultural Background</div>", unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="history-text">{row["History"]}</div>',
+        unsafe_allow_html=True
     )
 
 
 # =========================================================
-# SUMMARY TAB
+# TAB 2: LYRICS
+# =========================================================
+
+with tab2:
+
+    lyrics_lines = len(song_lyrics.strip().split("\n"))
+
+    st.caption(f"Word count: {song_word_count} | Lines: {lyrics_lines} | Script: Devanagari")
+
+    st.text_area(
+        "Original Lyrics",
+        song_lyrics,
+        height=420,
+        label_visibility="visible"
+    )
+
+
+# =========================================================
+# TAB 3: SUMMARY
 # =========================================================
 
 with tab3:
+
+    st.caption("Model: csebuetnlp/mT5_multilingual_XLSum | Decoding: Beam Search (beams=4, max_length=80, min_length=25)")
 
     if st.button(
         "Generate Summary",
@@ -226,12 +282,20 @@ with tab3:
 
     if "summary" in st.session_state:
 
-        st.subheader("AI Summary")
+        summary_text = st.session_state["summary"]
+        summary_words = len(summary_text.split())
+        compression_ratio = round((1 - (summary_words / max(song_word_count, 1))) * 100)
 
+        st.markdown("### AI Summary")
         st.markdown(
             f"""
-            <div class="summary-card">
-                {st.session_state["summary"]}
+            <div class="summary-box">
+                <div class="summary-text">{summary_text}</div>
+                <div class="summary-meta">
+                    Original: {song_word_count} words &nbsp;|&nbsp;
+                    Summary: {summary_words} words &nbsp;|&nbsp;
+                    Compression: {compression_ratio}% reduction
+                </div>
             </div>
             """,
             unsafe_allow_html=True
@@ -240,12 +304,12 @@ with tab3:
     else:
 
         st.info(
-            "Click 'Generate Summary' to generate an AI-based summary."
+            "Click 'Generate Summary' to produce an AI-generated summary of the selected song."
         )
 
 
 # =========================================================
-# EMOTION ANALYSIS TAB
+# TAB 4: EMOTION ANALYSIS
 # =========================================================
 
 with tab4:
@@ -254,49 +318,53 @@ with tab4:
         row["Processed_Lyrics"]
     )
 
-    st.subheader("Emotion Analysis")
+    EMOTION_MARATHI = {
+        "Heroism": "वीर रस (शौर्य)",
+        "Patriotism": "देशभक्ती",
+        "Devotion": "भक्ती भाव",
+        "Love": "शृंगार रस",
+        "Joy": "आनंद / उल्हास",
+        "Sadness": "करुण रस (दुःख)",
+        "Anger": "रौद्र रस (क्रोध)",
+        "Neutral": "तटस्थ"
+    }
 
-    emotion_col1, emotion_col2, emotion_col3 = st.columns(3)
+    st.subheader("Emotion Analysis Results")
 
-    with emotion_col1:
+    col_e1, col_e2, col_e3 = st.columns(3)
 
+    with col_e1:
+        st.metric("Primary Emotion", primary)
+        st.caption(f"Marathi: {EMOTION_MARATHI.get(primary, '-')}")
+
+    with col_e2:
+        sec_label = secondary if secondary != "-" else "None"
+        st.metric("Secondary Emotion", sec_label)
+        sec_sub = EMOTION_MARATHI.get(secondary, "Single dominant emotion") if secondary != "-" else "Single dominant emotion"
+        st.caption(f"Marathi: {sec_sub}")
+
+    with col_e3:
+        st.metric("Confidence", f"{confidence}%")
+        st.progress(min(confidence / 100.0, 1.0))
+
+    with st.expander("Emotion Keyword Categories Reference"):
         st.markdown(
-            f"""
-            <div class="emotion-card">
-                <h4>Primary Emotion</h4>
-                <h2>{primary}</h2>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with emotion_col2:
-
-        st.markdown(
-            f"""
-            <div class="emotion-card">
-                <h4>Secondary Emotion</h4>
-                <h2>{secondary}</h2>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with emotion_col3:
-
-        st.markdown(
-            f"""
-            <div class="emotion-card">
-                <h4>Confidence</h4>
-                <h2>{confidence}%</h2>
-            </div>
-            """,
-            unsafe_allow_html=True
+            """
+            | Emotion | Marathi Category | Representative Keywords |
+            | :--- | :--- | :--- |
+            | Heroism | वीर रस | शिवाजी, वीर, शहाजी, तानाजी, किल्ला, सरदार, तलवार, स्वराज्य, मावळे, युद्ध |
+            | Patriotism | देशभक्ती | महाराज, देश, राजा, मराठा, काँग्रेस, ध्वज, भूमी, मातृभूमी |
+            | Devotion | भक्ती भाव | विठ्ठल, हरि, राम, देव, देवा, नाम, तुका, मुक्ताई, पांडुरंग, कृष्ण, भक्त |
+            | Love | शृंगार रस | जीव, चांदणी, पोरी, बाई, माझ्या, तुला, रूप, मदन |
+            | Joy | आनंद | आनंद, गाऊ, खेळ, नाच, उत्सव, सुख, गजर |
+            | Sadness | करुण रस | दुःख, रड, विरह, एकटा, गेली, नको, अश्रू |
+            | Anger | रौद्र रस | क्रोध, राग, शत्रू, लढ, मोड, वैर, युद्ध |
+            """
         )
 
 
 # =========================================================
-# EVALUATION TAB
+# TAB 5: EVALUATION
 # =========================================================
 
 with tab5:
@@ -304,13 +372,12 @@ with tab5:
     st.subheader("Summarization Evaluation")
 
     st.markdown(
-        "Comparison of the Extractive and mT5 summarization methods "
-        "using ROUGE evaluation."
+        "Comparison of the Extractive baseline and mT5 abstractive summarization "
+        "using ROUGE metrics evaluated on 20 reference folk songs."
     )
 
     if not evaluation_scores.empty:
 
-        # Prepare average ROUGE score table
         score_table = evaluation_scores.pivot(
             index="Metric",
             columns="Method",
@@ -323,34 +390,40 @@ with tab5:
 
         st.subheader("Average ROUGE Scores")
 
-        metric_col1, metric_col2, metric_col3 = st.columns(3)
+        m1_col, m2_col, mL_col = st.columns(3)
 
-        for metric, column in zip(
-            ["ROUGE-1", "ROUGE-2", "ROUGE-L"],
-            [metric_col1, metric_col2, metric_col3]
-        ):
-            with column:
+        for metric, col in zip(["ROUGE-1", "ROUGE-2", "ROUGE-L"], [m1_col, m2_col, mL_col]):
+            with col:
                 if metric in score_table.index:
-                    extractive_score = score_table.loc[
-                        metric, "Extractive"
-                    ] if "Extractive" in score_table.columns else None
-
-                    mt5_score = score_table.loc[
-                        metric, "mT5"
-                    ] if "mT5" in score_table.columns else None
-
-                    st.metric(
-                        metric,
-                        f"{extractive_score:.4f}"
-                        if pd.notna(extractive_score) else "N/A",
-                        delta=(
-                            f"{mt5_score - extractive_score:+.4f} mT5 vs Extractive"
-                            if pd.notna(extractive_score)
-                            and pd.notna(mt5_score)
-                            else None
-                        ),
-                        delta_color="off"
+                    ext_val = (
+                        score_table.loc[metric, "Extractive"]
+                        if "Extractive" in score_table.columns else 0.0
                     )
+                    mt5_val = (
+                        score_table.loc[metric, "mT5"]
+                        if "mT5" in score_table.columns else 0.0
+                    )
+                    diff = mt5_val - ext_val
+
+                    st.markdown(
+                        f"""
+                        <div class="eval-card">
+                            <div class="eval-card-header">{metric}</div>
+                            <div class="eval-card-body">
+                                <div><span class="eval-label">Extractive:</span> <strong>{ext_val:.4f}</strong></div>
+                                <div><span class="eval-label">mT5:</span> <strong>{mt5_val:.4f}</strong></div>
+                            </div>
+                            <div class="eval-card-footer">Difference: {diff:+.4f}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+        st.caption(
+            "Note on ROUGE scores: Extractive summarization selects verbatim sentences directly from "
+            "the source lyrics, naturally achieving higher n-gram overlap. The mT5 model generates novel, "
+            "paraphrased sentences in Marathi, which results in lower lexical overlap scores while providing true abstractive summarization."
+        )
 
         st.subheader("Method Comparison")
 
@@ -362,21 +435,15 @@ with tab5:
             x_label="ROUGE Metric"
         )
 
-        st.caption(
-            "Higher ROUGE scores indicate greater word or sequence "
-            "overlap with the reference summaries. They do not, by "
-            "themselves, establish semantic accuracy or fluency."
-        )
-
         st.subheader("Detailed Score Table")
 
-        display_scores = evaluation_scores.copy()
-        display_scores["Average F1 Score"] = (
-            display_scores["Average F1 Score"].round(4)
+        disp_scores = evaluation_scores.copy()
+        disp_scores["Average F1 Score"] = (
+            disp_scores["Average F1 Score"].round(4)
         )
 
         st.dataframe(
-            display_scores,
+            disp_scores,
             use_container_width=True,
             hide_index=True
         )
@@ -389,7 +456,7 @@ with tab5:
             "from the project root to generate them."
         )
 
-    st.divider()
+    st.markdown("---")
 
     st.subheader("Song-wise Evaluation Results")
 
@@ -402,39 +469,89 @@ with tab5:
             if song in available_titles:
                 selected_result = evaluation_results[
                     evaluation_results["Title"] == song
-                ]
+                ].iloc[0]
 
-                st.markdown(f"**Selected song: {song}**")
+                st.markdown(f"**Qualitative Comparison for: {song}**")
 
-                summary_columns = [
-                    col for col in [
-                        "Title",
-                        "Reference_Summary",
-                        "Extractive_Summary",
-                        "Extractive_ROUGE-1",
-                        "Extractive_ROUGE-2",
-                        "Extractive_ROUGE-L",
-                        "mT5_Summary",
-                        "mT5_ROUGE-1",
-                        "mT5_ROUGE-2",
-                        "mT5_ROUGE-L"
+                c1, c2, c3 = st.columns(3)
+
+                with c1:
+                    st.markdown(
+                        f"""
+                        <div class="qual-box">
+                            <div class="qual-title">Reference Summary</div>
+                            <div class="qual-content">{selected_result.get('Reference_Summary', 'N/A')}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                with c2:
+                    e1 = selected_result.get('Extractive_ROUGE-1', None)
+                    e2 = selected_result.get('Extractive_ROUGE-2', None)
+                    el = selected_result.get('Extractive_ROUGE-L', None)
+                    score_str = (
+                        f"R-1: {e1:.4f} | R-2: {e2:.4f} | R-L: {el:.4f}"
+                        if pd.notna(e1) else ""
+                    )
+                    st.markdown(
+                        f"""
+                        <div class="qual-box">
+                            <div class="qual-title">Extractive Baseline</div>
+                            <div class="qual-content">{selected_result.get('Extractive_Summary', 'N/A')}</div>
+                            <div class="qual-meta">{score_str}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                with c3:
+                    m1 = selected_result.get('mT5_ROUGE-1', None)
+                    m2 = selected_result.get('mT5_ROUGE-2', None)
+                    ml = selected_result.get('mT5_ROUGE-L', None)
+                    m_score_str = (
+                        f"R-1: {m1:.4f} | R-2: {m2:.4f} | R-L: {ml:.4f}"
+                        if pd.notna(m1) else ""
+                    )
+                    st.markdown(
+                        f"""
+                        <div class="qual-box">
+                            <div class="qual-title">mT5 Abstractive</div>
+                            <div class="qual-content">{selected_result.get('mT5_Summary', 'N/A')}</div>
+                            <div class="qual-meta">{m_score_str}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                with st.expander("View Numerical Table for Selected Song"):
+                    summary_columns = [
+                        col for col in [
+                            "Title",
+                            "Reference_Summary",
+                            "Extractive_Summary",
+                            "Extractive_ROUGE-1",
+                            "Extractive_ROUGE-2",
+                            "Extractive_ROUGE-L",
+                            "mT5_Summary",
+                            "mT5_ROUGE-1",
+                            "mT5_ROUGE-2",
+                            "mT5_ROUGE-L"
+                        ]
+                        if col in selected_result.index
                     ]
-                    if col in selected_result.columns
-                ]
-
-                st.dataframe(
-                    selected_result[summary_columns],
-                    use_container_width=True,
-                    hide_index=True
-                )
+                    st.dataframe(
+                        pd.DataFrame([selected_result[summary_columns]]),
+                        use_container_width=True,
+                        hide_index=True
+                    )
 
             else:
                 st.info(
-                    "This song is not part of the 20-song evaluation set. "
-                    "The average ROUGE scores above are still available."
+                    "The selected song is part of the broader corpus and was not included in the 20-song reference evaluation set."
                 )
 
-            with st.expander("View all evaluated songs"):
+            with st.expander("View Complete 20-Song Benchmark Dataset"):
                 st.dataframe(
                     evaluation_results,
                     use_container_width=True,
